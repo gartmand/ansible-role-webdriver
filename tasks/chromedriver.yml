@@ -34,9 +34,10 @@
       }}
 
 - debug:
-    var:
-      - nonspecific_chrome_versions
-      - specific_chrome_versions
+    var: "{{ item }}"
+  with_items:
+    - nonspecific_chrome_versions
+    - specific_chrome_versions
 
 - name: Gather specific ChromeDriver versions from less-specific desired versions
   uri:
