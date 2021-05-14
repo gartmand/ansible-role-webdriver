@@ -1,0 +1,64 @@
+# - name: Check if the "latest" ChromeDriver is desired, and get its alias (if any)
+#   set_fact: 
+#     latest_alias: >
+#     {{ chromedriver.desired_versions 
+#         | selectattr('latest', 'defined') 
+#         | selectattr('latest', 'equalto', True) 
+#         | map(attribute='alias', default='latest') 
+#         | first
+#         | default(None) }}
+
+# - name: Determine the "latest" ChromeDriver's specific version
+#   uri:
+#     url: "{{ chromedriver.base_url }}/LATEST_RELEASE"
+#     return_content: yes
+#   register: latest_chrome_cmd
+#   when: latest_alias is defined
+
+# - name: Store the "latest" ChromeDriver version for later use 
+#   set_fact:
+#     latest_chromedriver_version: "{{ latest_chrome_cmd.content }}"
+#   when: latest_chrome_cmd is defined
+
+- name: Organize desired ChromeDriver versions into "specific enough" and "not specific"
+  set_fact:
+    nonspecific_chrome_versions: >
+      {{ chromedriver.desired_versions
+        | selectattr('version', 'search', '^(latest|\d+(\.\d+){0,2})$')
+        | list
+      }}
+    specific_chrome_versions: >
+      {{ chromedriver.desired_versions 
+        | selectattr('version', 'search', '^\d+(\.\d+){3}$')
+        | list
+      }}
+
+- debug:
+    var:
+      - nonspecific_chrome_versions
+      - specific_chrome_versions
+
+- name: Gather specific ChromeDriver versions from less-specific desired versions
+  uri:
+    url: "{{ chromedriver.baseurl }}/LATEST_RELEASE{{ '_' + item.version if item.version != 'latest' else '' }}"
+    return_content: yes
+  with_items: '{{ nonspecific_chrome_versions }}'
+  register: specific_chrome_cmd 
+
+- debug:
+    var: specific_chrome_cmd.results
+    verbosity: 3
+  
+# TODO preserve original version strings / aliases alongside!
+
+- name: Combine results with known specific versions
+  set_fact:
+    all_chrome_versions: >
+      {{ specific_chrome_cmd.results | map(attribute='content') | list 
+        | union(
+          specific_chrome_versions | map(attribute='version') | list
+        ) 
+      }}
+
+- debug:
+    var: all_chrome_versions

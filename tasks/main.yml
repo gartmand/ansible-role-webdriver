@@ -1,0 +1,16 @@
+- name: Ensure webdriver cache directory exists
+  file:
+    path: "{{ webdriver_cache_path }}"
+    owner: "{{ webdriver_cache_owner }}"
+    group: "{{ webdriver_cache_group }}"
+    mode: "{{ webdriver_cache_permissions }}"
+    state: directory
+  when: chromedriver.should_install or geckodriver.should_install
+
+- name: Install ChromeDriver
+  include_tasks: chromedriver.yml
+  when: chromedriver.should_install
+
+- name: Install GeckoDriver
+  include_tasks: geckodriver.yml
+  when: geckodriver.should_install # TODO uninstalls?

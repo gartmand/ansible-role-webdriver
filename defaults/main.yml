@@ -1,0 +1,31 @@
+---
+# Since these are dicts, consider "combine" filter or merging them somehow if you override
+chromedriver:
+  should_install: yes
+  desired_versions:
+    - version: "81.0.4044.138"
+      alias: "81"
+    - version: "87.0.4280"
+      alias: "87"
+    - version: "88"
+    - version: "89"
+    - version: "90"
+    - version: "91"
+    - version: "latest"
+  default_version: "89"
+  baseurl: https://chromedriver.storage.googleapis.com
+
+geckodriver:
+  should_install: no
+  desired_versions:
+    - { latest: yes }
+    - { specific_version: "0.29.0" }
+    - { specific_version: "0.24.0" }
+    - { specific_version: "0.20.1" }
+  default_version: "0.20.1"
+  baseurl: https://github.com/mozilla/geckodriver/releases
+
+webdriver_cache_path: /var/lib/selenium/.drivers
+webdriver_cache_owner: root
+webdriver_cache_group: root
+webdriver_cache_permissions: "0755"
